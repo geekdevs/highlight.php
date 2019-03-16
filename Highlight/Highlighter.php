@@ -33,10 +33,12 @@
 
 namespace Highlight;
 
+use Highlight\Decorator\CliDecorator;
+use Highlight\Decorator\Decorator;
+use Highlight\Decorator\HtmlDecorator;
+
 class Highlighter
 {
-    const SPAN_END_TAG = "</span>";
-
     private $options;
 
     private $modeBuffer = "";
@@ -55,7 +57,9 @@ class Highlighter
         "xml", "json", "javascript", "css", "php", "http",
     );
 
-    public function __construct()
+    private $decorator;
+
+    public function __construct(?Decorator $decorator = null)
     {
         $this->options = array(
             'classPrefix' => 'hljs-',
@@ -63,6 +67,15 @@ class Highlighter
             'useBR' => false,
             'languages' => null,
         );
+
+        if ($decorator) {
+            $this->decorator = $decorator;
+        } else {
+            //Default decorator
+            $this->decorator = new HtmlDecorator([
+                'classPrefix' => $this->options['classPrefix']
+            ]);
+        }
 
         self::registerLanguages();
     }
@@ -182,20 +195,9 @@ class Highlighter
         return isset($mode->keywords[$kwd]) ? $mode->keywords[$kwd] : null;
     }
 
-    private function buildSpan($classname, $insideSpan, $leaveOpen = false, $noPrefix = false)
-    {
-        $classPrefix = $noPrefix ? "" : $this->options['classPrefix'];
-        $openSpan = "<span class=\"" . $classPrefix;
-        $closeSpan = $leaveOpen ? "" : self::SPAN_END_TAG;
-
-        $openSpan .= $classname . "\">";
-
-        return $openSpan . $insideSpan . $closeSpan;
-    }
-
     private function escape($value)
     {
-        return htmlspecialchars($value, ENT_NOQUOTES);
+        return $this->decorator->escape($value);
     }
 
     private function processKeywords()
@@ -218,7 +220,7 @@ class Highlighter
 
                 if ($keyword_match) {
                     $this->relevance += $keyword_match[1];
-                    $result .= $this->buildSpan($keyword_match[0], $this->escape($match[0][0]));
+                    $result .= $this->decorator->decorate($keyword_match[0], $this->escape($match[0][0]));
                 } else {
                     $result .= $this->escape($match[0][0]);
                 }
@@ -265,7 +267,7 @@ class Highlighter
                 $this->continuations[$this->top->subLanguage] = $res->top;
             }
 
-            return $this->buildSpan($res->language, $res->value, false, true);
+            return $this->decorator->decorate($res->language, $res->value, false, true);
         } catch (\Exception $e) {
             error_log("TODO, is this a relevant catch?");
             error_log($e);
@@ -287,7 +289,7 @@ class Highlighter
 
     private function startNewMode($mode)
     {
-        $this->result .= $mode->className ? $this->buildSpan($mode->className, "", true) : "";
+        $this->result .= $mode->className ? $this->decorator->decorate($mode->className, "", true) : "";
 
         $t = clone $mode;
         $t->parent = $this->top;
@@ -338,7 +340,7 @@ class Highlighter
             }
             do {
                 if ($this->top->className) {
-                    $this->result .= self::SPAN_END_TAG;
+                    $this->result .= $this->decorator->close($this->top->className);
                 }
                 if (!$this->top->skip && !$this->top->subLanguage) {
                     $this->relevance += $this->top->relevance;
@@ -489,7 +491,7 @@ class Highlighter
 
         for ($current = $this->top; $current != $this->language->mode; $current = $current->parent) {
             if ($current->className) {
-                $this->result = $this->buildSpan($current->className, '', true) . $this->result;
+                $this->result = $this->decorator->decorate($current->className, '', true) . $this->result;
             }
         }
 
@@ -521,12 +523,15 @@ class Highlighter
 
             for ($current = $this->top; isset($current->parent); $current = $current->parent) {
                 if ($current->className) {
-                    $this->result .= self::SPAN_END_TAG;
+                    $this->result .= $this->decorator->close($this->top->className);
                 }
             }
 
             $res->relevance = $this->relevance;
-            $res->value = $this->replaceTabs($this->result);
+            $res->value = $this->decorator->decorate(
+                'document',
+                $this->replaceTabs($this->result)
+            );
             $res->language = $this->language->name;
             $res->top = $this->top;
 
