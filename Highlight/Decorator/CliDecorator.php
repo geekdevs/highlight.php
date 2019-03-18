@@ -24,10 +24,10 @@ class CliDecorator implements Decorator
         $this->colorMap = $colorMap;
 
         //Some required defaults
-        if (empty($this->colorMap['document'])) {
-            $this->colorMap['document'] = Colors::DARK_GRAY;
-        }
-
+//        if (empty($this->colorMap['document'])) {
+//            $this->colorMap['document'] = Colors::DARK_GRAY;
+//        }
+//
         if (empty($this->colorMap['default'])) {
             $this->colorMap['default'] = Colors::WHITE;
         }
@@ -43,23 +43,26 @@ class CliDecorator implements Decorator
      */
     public function decorate(string $nodeType, string $contents, bool $leaveOpen = false, bool $isNested = false): string
     {
-        if (!empty($contents)) {
-            $this->close();
-        }
+        $output = $this->open($nodeType);
 
-        $color = $this->colorMap[$nodeType] ?? $this->colorMap['default'];
-        $output = $color.$contents;
+//        $output .= '`'.$nodeType.'`: ';
+        $output .= $contents;
 
-        if ($nodeType !== 'document') {
-            if (!$leaveOpen) {
-                $output .= $this->close($nodeType);
-            }
-        } else {
-            //close document without re-opening default color
-            $output .= Colors::RESET;
+        if (!$leaveOpen) {
+            $output .= $this->close($nodeType);
         }
 
         return $output;
+    }
+
+    /**
+     * @param string $nodeType
+     *
+     * @return string
+     */
+    protected function open(string $nodeType): string
+    {
+        return $this->colorMap[$nodeType] ?? $this->colorMap['default'];
     }
 
     /**
@@ -67,7 +70,7 @@ class CliDecorator implements Decorator
      */
     public function close(): string
     {
-        return Colors::RESET.$this->colorMap['document'];
+        return Colors::RESET;
     }
 
     /**

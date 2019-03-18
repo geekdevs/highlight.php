@@ -40,4 +40,27 @@ class Colors
     public const LIGHT_PURPLE  = "\033[1;35m";
     public const LIGHT_YELLOW  = "\033[1;93m";
     public const LIGHT_MAGENTA = "\033[1;35m";
+
+
+    /**
+     * Converts user-friendly color name to CLI color code
+     *
+     * @param string $colorName
+     *
+     * @return string
+     */
+    public static function normalizeColor(string $colorName): string
+    {
+        $colorName = strtoupper($colorName);
+
+        if (!defined(Colors::class.'::'.$colorName)) {
+            throw new \RuntimeException(sprintf(
+                'Unsupported color %s, for list of supported colors check constants at %s.',
+                $colorName,
+                Colors::class
+            ));
+        }
+
+        return constant(Colors::class.'::'.$colorName);
+    }
 }

@@ -340,7 +340,7 @@ class Highlighter
             }
             do {
                 if ($this->top->className) {
-                    $this->result .= $this->decorator->close($this->top->className);
+                    $this->result .= $this->decorator->close();
                 }
                 if (!$this->top->skip && !$this->top->subLanguage) {
                     $this->relevance += $this->top->relevance;
@@ -488,6 +488,7 @@ class Highlighter
         $this->top = $continuation ? $continuation : $this->language->mode;
         $this->continuations = array();
         $this->result = "";
+        $this->result = $this->decorator->decorate('document', '', true);
 
         for ($current = $this->top; $current != $this->language->mode; $current = $current->parent) {
             if ($current->className) {
@@ -523,15 +524,14 @@ class Highlighter
 
             for ($current = $this->top; isset($current->parent); $current = $current->parent) {
                 if ($current->className) {
-                    $this->result .= $this->decorator->close($this->top->className);
+                    $this->result .= $this->decorator->close();
                 }
             }
 
             $res->relevance = $this->relevance;
-            $res->value = $this->decorator->decorate(
-                'document',
-                $this->replaceTabs($this->result)
-            );
+            $res->value = $this->replaceTabs($this->result);
+            $res->value .= $this->decorator->close();
+
             $res->language = $this->language->name;
             $res->top = $this->top;
 
