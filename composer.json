@@ -1,5 +1,5 @@
 {
-    "name": "scrivo/highlight.php",
+    "name": "geekdevs/highlight.php",
     "description": "Server side syntax highlighter that supports 185 languages. It's a PHP port of highlight.js",
     "keywords": [
         "code",
