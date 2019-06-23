@@ -1,0 +1,78 @@
+{
+   "keywords" : {
+       "keyword": "Array Object",
+       "literal" : "true false yes no null"
+   },
+   "contains" : [
+      {
+         "className" : "attr",
+         "variants" : [
+            {
+               "begin" : "\\[[a-zA-Z_0-9]*\\]"
+            }
+         ]
+      },
+      {
+         "relevance" : 10,
+         "className" : "meta",
+         "begin" : "=>"
+      },
+      {
+         "end" : "^[ \\-]*[a-zA-Z_][\\w\\-]*:",
+         "returnEnd" : true,
+         "contains" : [
+            {
+               "relevance" : 0,
+               "begin" : "\\\\[\\s\\S]"
+            }
+         ],
+         "begin" : "[\\|>] *$",
+         "className" : "string"
+      },
+      {
+         "begin" : "&[a-zA-Z_]\\w*$",
+         "className" : "meta"
+      },
+      {
+         "className" : "meta",
+         "begin" : "\\*[a-zA-Z_]\\w*$"
+      },
+      {
+         "className" : "literal",
+         "begin" : "(-?)(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)[\\n]",
+         "relevance" : 0
+      },
+      {
+         "className" : "section",
+         "begin" : "Array"
+      },
+      
+      {
+         "relevance" : 0,
+         "className" : "string",
+         "variants" : [
+            {
+               "end" : "'",
+               "begin" : "'"
+            },
+            {
+               "end" : "\"",
+               "begin" : "\""
+            },
+            {
+               "begin" : "\\S+"
+            }
+         ],
+         "contains" : {
+            "$ref" : "#contains.2.contains"
+         }
+      }      
+   ],
+   "case_insensitive" : false,
+   "aliases" : [
+      "printr",
+      "print_r",
+      "php-printr",
+      "php-print_r"
+   ]
+}
