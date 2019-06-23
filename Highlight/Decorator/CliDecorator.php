@@ -21,7 +21,7 @@ class CliDecorator implements Decorator
      */
     public function __construct(array $colorMap = [])
     {
-        $this->colorMap = $colorMap;
+        $this->colorMap = $this->getColorScheme($colorMap);
 
         //Some required defaults
 //        if (empty($this->colorMap['document'])) {
@@ -32,6 +32,38 @@ class CliDecorator implements Decorator
             $this->colorMap['default'] = Colors::WHITE;
         }
     }
+    
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    private function getColorScheme(array $colorMap): array
+    {
+        $colorScheme = [
+            'document' => 'light_white',
+            'section' => 'green',
+            'keyword' => 'green',
+            'class'  => 'green',
+            'attr'   => 'red',
+            'bullet'   => 'red',
+            'string' => 'light_blue',
+            'number' => 'light_red',
+            'literal' => 'yellow',
+            'meta' => 'blue',
+            'comments'   => 'gray',
+        ];
+        
+        $colorScheme = $colorMap + $colorScheme;    // duplicate keys in $colorScheme ignored.
+        
+        //Normalize colors
+        foreach ($colorScheme as &$colorName) {
+            $colorName = Colors::normalizeColor($colorName);
+        }
+
+        return $colorScheme;
+    }
+    
 
     /**
      * @param string $nodeType
